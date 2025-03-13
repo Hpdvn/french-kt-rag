@@ -4,6 +4,7 @@ import os
 from openai import OpenAI
 import dotenv
 import logging
+from waitress import serve
 
 dotenv.load_dotenv()
 
@@ -165,5 +166,16 @@ Explication courte et claire.
         }
     })
 
+# Point d'entrée pour l'exécution avec Waitress
+def create_app():
+    return app
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Configuration pour le développement
+    if os.getenv("FLASK_ENV") == "development":
+        app.run(debug=True, host='0.0.0.0', port=5000)
+    else:
+        # Configuration pour la production avec Waitress
+        port = int(os.getenv("PORT", 5000))
+        logger.info(f"Démarrage du serveur Waitress sur le port {port}")
+        serve(app, host='0.0.0.0', port=port, threads=4)
