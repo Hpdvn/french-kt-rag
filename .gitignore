@@ -1,0 +1,25 @@
+# Environnement Python
+venv/
+env/
+.env
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+
+# Dossiers de données
+data/
+vectors/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Système d'exploitation
+.DS_Store
+Thumbs.db 

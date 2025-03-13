@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kill Team - Intelligence Tactique</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@400;700&display=swap');
+        
+        :root {
+            --primary-color: #1a9c02;
+            --secondary-color: #8b0000;
+            --bg-color: #0a0a0a;
+            --panel-color: #1a1a1a;
+            --text-color: #c5c5c5;
+            --highlight-color: #e6e600;
+            --border-color: #444;
+            --success-color: #1a9c02;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 0;
+            font-size: 16px;
+            /* Fond style tôle métallique */
+            background-image: 
+                linear-gradient(45deg, rgba(0,0,0,0.2) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.2) 75%),
+                linear-gradient(45deg, rgba(0,0,0,0.2) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.2) 75%),
+                linear-gradient(to bottom, #333333, #222222);
+            background-size: 10px 10px, 10px 10px, 100% 100%;
+            background-position: 0 0, 5px 5px, 0 0;
+            background-attachment: fixed;
+        }
+        
+        .metal-texture {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/><line x1="0" y1="0" x2="100" y2="100" stroke="rgba(255,255,255,0.03)" stroke-width="0.5"/><line x1="100" y1="0" x2="0" y2="100" stroke="rgba(255,255,255,0.03)" stroke-width="0.5"/></svg>');
+            background-size: 10px 10px;
+            opacity: 0.8;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .metal-shine {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%);
+            background-size: 200% 200%;
+            animation: shine 10s ease infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        @keyframes shine {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 15px;
+            background-color: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7), inset 0 0 10px rgba(0, 0, 0, 0.5);
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 5px),
+                repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 5px);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .rivets {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #444;
+            border-radius: 50%;
+            box-shadow: inset 0 0 2px rgba(0,0,0,0.8), 0 0 1px rgba(255,255,255,0.4);
+        }
+        
+        .rivet-1 { top: 10px; left: 10px; }
+        .rivet-2 { top: 10px; right: 10px; }
+        .rivet-3 { bottom: 10px; left: 10px; }
+        .rivet-4 { bottom: 10px; right: 10px; }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+            position: relative;
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .logo {
+            max-width: 250px;
+            height: auto;
+            filter: drop-shadow(0 0 10px rgba(26, 156, 2, 0.7));
+        }
+        
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-color);
+            letter-spacing: 1px;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+        }
+        
+        .search-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .button-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--panel-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5), 0 0 10px rgba(26, 156, 2, 0.3);
+        }
+        
+        button {
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        
+        button:hover, button:active {
+            background-color: #25c002;
+            box-shadow: 0 0 15px rgba(26, 156, 2, 0.7);
+        }
+        
+        .search-btn {
+            flex: 3;
+        }
+        
+        .reset-btn {
+            flex: 1;
+            background-color: #555;
+        }
+        
+        .reset-btn:hover {
+            background-color: #777;
+            box-shadow: 0 0 15px rgba(150, 150, 150, 0.7);
+        }
+        
+        .results {
+            margin-top: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 15px;
+            font-size: 1rem;
+            color: var(--highlight-color);
+        }
+        
+        .loading i {
+            margin-right: 10px;
+            animation: spin 1.5s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .ai-response {
+            background-color: rgba(26, 156, 2, 0.1);
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            position: relative;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .ai-response h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+        
+        .ai-response h2 i {
+            margin-right: 8px;
+        }
+        
+        .ai-response p {
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+        
+        /* Styles pour le contenu Markdown */
+        .markdown-content {
+            line-height: 1.6;
+        }
+        
+        .markdown-content h1, 
+        .markdown-content h2, 
+        .markdown-content h3, 
+        .markdown-content h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-color);
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
+        
+        .markdown-content h1 { font-size: 1.5rem; }
+        .markdown-content h2 { font-size: 1.3rem; }
+        .markdown-content h3 { font-size: 1.1rem; }
+        .markdown-content h4 { font-size: 1rem; }
+        
+        .markdown-content p {
+            margin-bottom: 1em;
+        }
+        
+        .markdown-content ul, 
+        .markdown-content ol {
+            margin-left: 1.5em;
+            margin-bottom: 1em;
+        }
+        
+        .markdown-content li {
+            margin-bottom: 0.5em;
+        }
+        
+        .markdown-content strong {
+            color: var(--highlight-color);
+            font-weight: bold;
+        }
+        
+        .markdown-content em {
+            font-style: italic;
+        }
+        
+        .markdown-content code {
+            font-family: 'Roboto Mono', monospace;
+            background-color: rgba(0,0,0,0.3);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        
+        .markdown-content pre {
+            background-color: rgba(0,0,0,0.3);
+            padding: 1em;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin-bottom: 1em;
+        }
+        
+        .markdown-content blockquote {
+            border-left: 3px solid var(--secondary-color);
+            padding-left: 1em;
+            margin-left: 0;
+            margin-bottom: 1em;
+            font-style: italic;
+            color: #aaa;
+        }
+        
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1em;
+        }
+        
+        .markdown-content th, 
+        .markdown-content td {
+            border: 1px solid var(--border-color);
+            padding: 0.5em;
+            text-align: left;
+        }
+        
+        .markdown-content th {
+            background-color: rgba(0,0,0,0.2);
+        }
+        
+        .sources-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--highlight-color);
+            margin: 20px 0 10px;
+            display: flex;
+            align-items: center;
+            font-size: 1.1rem;
+        }
+        
+        .sources-title i {
+            margin-right: 8px;
+        }
+        
+        .result-item {
+            background-color: var(--panel-color);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .result-item:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .result-item strong {
+            color: var(--highlight-color);
+        }
+        
+        .score-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            background-color: var(--primary-color);
+            color: #fff;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            margin-left: 5px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.7rem;
+            color: #666;
+        }
+        
+        /* Effet de terminal */
+        .terminal-effect {
+            position: relative;
+        }
+        
+        .terminal-effect::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            opacity: 0.3;
+        }
+        
+        /* Bouton pour afficher/masquer les sources */
+        .toggle-sources {
+            background-color: transparent;
+            color: var(--highlight-color);
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            margin-top: 5px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toggle-sources i {
+            margin-right: 5px;
+        }
+        
+        .sources-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+        
+        .sources-container.show {
+            max-height: 1000px;
+        }
+        
+        /* Bouton pour remonter en haut */
+        .scroll-top-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+        }
+        
+        .scroll-top-btn.visible {
+            opacity: 1;
+        }
+        
+        .scroll-top-btn:hover {
+            background-color: #25c002;
+            box-shadow: 0 0 15px rgba(26, 156, 2, 0.7);
+        }
+        
+        /* Styles pour les appareils mobiles */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+            
+            .container {
+                border-radius: 0;
+                min-height: 100vh;
+                padding: 10px;
+            }
+            
+            .subtitle {
+                font-size: 0.7rem;
+            }
+            
+            .ai-response, .result-item {
+                padding: 10px;
+            }
+            
+            input[type="text"], button {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
+            
+            .logo {
+                max-width: 200px;
+            }
+            
+            .scroll-top-btn {
+                width: 40px;
+                height: 40px;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+    </style>
+    <!-- Inclusion de la bibliothèque Marked.js pour convertir le Markdown en HTML -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="metal-texture"></div>
+    <div class="metal-shine"></div>
+    
+    <div class="container terminal-effect">
+        <header id="top">
+            <div class="logo-container">
+                <img src="https://d1w82usnq70pt2.cloudfront.net/wp-content/uploads/2021/08/killteam-logo.png" alt="Kill Team Logo" class="logo">
+            </div>
+            <p class="subtitle">SYSTÈME D'INTELLIGENCE IMPÉRIALE</p>
+        </header>
+        
+        <div class="search-container">
+            <input type="text" id="query-input" placeholder="Requête tactique..." autofocus>
+            <div class="button-container">
+                <button class="search-btn" onclick="search()"><i class="fas fa-search"></i> INTERROGER</button>
+                <button class="reset-btn" onclick="resetPage()"><i class="fas fa-undo"></i> RESET</button>
+            </div>
+        </div>
+        
+        <div id="results" class="results"></div>
+        
+        <div class="footer">
+            <p>ADEPTUS MECHANICUS // OMNISSIAH SOIT LOUÉ</p>
+        </div>
+    </div>
+    
+    <!-- Bouton pour remonter en haut -->
+    <div class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()">
+        <i class="fas fa-chevron-up"></i>
+    </div>
+    
+    <script>
+        // Configuration de Marked pour le rendu Markdown
+        marked.setOptions({
+            breaks: true,        // Convertit les retours à la ligne en <br>
+            gfm: true,           // GitHub Flavored Markdown
+            headerIds: true,     // Ajoute des IDs aux en-têtes
+            mangle: false,       // Désactive le mangle des liens
+            sanitize: false,     // Ne pas sanitizer le HTML (attention aux XSS)
+            smartLists: true,    // Utilise une ponctuation plus intelligente pour les listes
+            smartypants: true,   // Utilise une ponctuation plus intelligente pour les guillemets, etc.
+            xhtml: false         // Utilise des balises auto-fermantes XHTML
+        });
+        
+        async function search() {
+            const query = document.getElementById('query-input').value;
+            if (!query) return;
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading"><i class="fas fa-cog"></i> Consultation des archives...</div>';
+            
+            try {
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    resultsDiv.innerHTML = `<p>Erreur: ${data.error}</p>`;
+                    return;
+                }
+                
+                let resultsHTML = '';
+                
+                // Afficher la réponse générée par l'IA avec conversion Markdown
+                if (data.ai_response) {
+                    // Convertir le Markdown en HTML
+                    const htmlContent = marked.parse(data.ai_response);
+                    
+                    resultsHTML += `
+                        <div class="ai-response">
+                            <h2><i class="fas fa-robot"></i> Réponse</h2>
+                            <div class="markdown-content">${htmlContent}</div>
+                        </div>
+                    `;
+                }
+                
+                // Bouton pour afficher/masquer les sources
+                resultsHTML += `
+                    <button class="toggle-sources" onclick="toggleSources()">
+                        <i class="fas fa-database"></i> Afficher les sources (${data.results.length})
+                    </button>
+                `;
+                
+                // Conteneur pour les sources (initialement masqué)
+                resultsHTML += '<div id="sources-container" class="sources-container">';
+                
+                if (data.results.length === 0) {
+                    resultsHTML += '<p>Aucune archive pertinente trouvée.</p>';
+                } else {
+                    data.results.forEach((result, index) => {
+                        resultsHTML += `
+                            <div class="result-item">
+                                <p><strong>Archive ${index + 1}</strong> <span class="score-badge">${(result.score * 100).toFixed(1)}%</span></p>
+                                <p>${result.payload.text ? result.payload.text.substring(0, 150) + '...' : JSON.stringify(result.payload)}</p>
+                            </div>
+                        `;
+                    });
+                }
+                
+                resultsHTML += '</div>'; // Fermeture du conteneur de sources
+                
+                resultsDiv.innerHTML = resultsHTML;
+            } catch (error) {
+                resultsDiv.innerHTML = `<p>Erreur: ${error.message}</p>`;
+            }
+        }
+        
+        // Fonction pour réinitialiser la page
+        function resetPage() {
+            document.getElementById('query-input').value = '';
+            document.getElementById('results').innerHTML = '';
+            scrollToTop();
+        }
+        
+        // Fonction pour afficher/masquer les sources
+        function toggleSources() {
+            const sourcesContainer = document.getElementById('sources-container');
+            const toggleButton = document.querySelector('.toggle-sources');
+            
+            sourcesContainer.classList.toggle('show');
+            
+            if (sourcesContainer.classList.contains('show')) {
+                toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i> Masquer les sources';
+            } else {
+                toggleButton.innerHTML = '<i class="fas fa-database"></i> Afficher les sources';
+            }
+        }
+        
+        // Fonction pour remonter en haut de la page
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+        
+        // Afficher/masquer le bouton de retour en haut selon la position de défilement
+        window.onscroll = function() {
+            const scrollTopBtn = document.getElementById('scrollTopBtn');
+            if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+                scrollTopBtn.classList.add('visible');
+            } else {
+                scrollTopBtn.classList.remove('visible');
+            }
+        };
+        
+        // Permettre l'utilisation de la touche Entrée pour lancer la recherche
+        document.getElementById('query-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                search();
+            }
+        });
+        
+        
+    </script>
+</body>
+</html> 
